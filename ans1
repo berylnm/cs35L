@@ -1,0 +1,92 @@
+1.
+  man -k "keyword"
+2.
+  keystroke: whereis cp
+    cp:/bin/cp /usr/bin/cp /usr/share/man/man1/cp.1.gz /usr/share/man/man1p/cp.1p.gz
+  keystroke: whereis wc
+    wc:/usr/bin/wcwc: /usr/bin/wc /usr/share/man/man1/wc.1.gz /usr/share/man/man1p/wc.1p.gz
+3.
+  keystroke: find /usr/bin -name "?" -type f	// find in this directory for a file with only one character
+  result:
+  /usr/bin/w
+	function: displays  information  about the users currently on the machine, and their processes. (keystroke: man w)
+  /usr/bin/[
+	function: bash_builtins, accepting options preceded by - accepts -- to signify the end of the options.
+  
+4.
+  keystroke: readlink /usr/bin/emacs
+    output: /etc/alternatives/emacs
+  keystroke:  readlink /etc/alternatives/emacs
+    output: /usr/bin/emacs-24.3
+Thus, emacs-24.3 is finally executed
+5.
+  g: permission of the "group"
+  o: permission of the "others"
+  s: temporarily set the id of "group" or "owner" to "others"
+  x: permission to execute 
+Thus,
+  g+s	 Run an executable with the permissions of the executable’s group
+  o-x	 take away the executing permission from the "others" group    
+6.
+  keystroke: find / -type f -mtime -21
+  (-n     for less than n*24 hours)
+7.
+  keystroke: find / -type d -mtime -21
+8.
+  keystroke: whereis find
+output: /usr/bin
+   keystroke: find /usr/bin -type l
+   in total there are 287 symbolic links
+output: (part of)
+/usr/bin/dvired
+/usr/bin/etags
+/usr/bin/psfaddtable
+/usr/bin/pdfjadetex
+/usr/bin/open
+/usr/bin/texhash
+/usr/bin/captoinfo
+/usr/bin/unxz
+/usr/bin/pmiostat
+...
+9.
+  keystroke: cd /usr/lib -atl
+result(on lnxsrv07): 
+	-rwxr-xr-x   1 root root  414960 Aug  7  2015 libfreeblpriv3.so
+10.
+  keystroke: man locale
+    It gets data from environment variables
+11.
+  keystroke: C-h a sort
+list: 
+  Buffer-menu-sort              M-x ... RET
+  sort-columns                  M-x ... RET
+  sort-fields                   M-x ... RET
+  sort-lines                    M-x ... RET
+  sort-numeric-fields           M-x ... RET
+  sort-pages                    M-x ... RET
+  sort-paragraphs               M-x ... RET
+  sort-regexp-fields            M-x ... RET
+  tabulated-list-col-sort       M-x ... RET
+  tabulated-list-sort           M-x ... RET
+12.
+  keystroke: C-h k keystroke  
+  C-M-a: Move to the beginning of the current defun.
+  C-M-b: Moves backward over the next sexp.
+  C-M-c: runs the command exit-recursive-edit
+  C-M-d: Move down one level of parens.
+  C-M-e: Move to the end of the current defun.
+  C-M-f: Moves forward over the next sexp.
+  C-M-g: undefined
+  C-M-h: runs the command mark-defun
+13.
+  keystroke: C-h k C-g
+  C-g runs the command keyboard-quit,causes a quit directly.
+      At top-level, as an editor command, this simply beeps.
+14.
+  keystroke: C-h f yank
+  Reinsert ("paste") the last stretch of killed text.
+15.
+  keystroke: emacs
+	     C-x d /usr/bin
+  The dired command in emacs shows available memory at the beginning, while ls -l does not.
+  Otherwise, the output of them are all the same.
