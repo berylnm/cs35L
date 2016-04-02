@@ -1,0 +1,104 @@
+To start:
+   keystroke: wget http://web.cs.ucla.edu/classes/spring16/cs35L/assign/assign1.html
+   	     cp  ~/Desktop/assign1.html ~/Desktop/exer1.html
+	     cp  ~/Desktop/assign1.html ~/Desktop/exer2.html
+	     cp  ~/Desktop/assign1.html ~/Desktop/exer3.html
+
+Exercise 1.1: Moving around in Emacs
+
+01. e m a c s SP e x e r 1 Tab Enter
+02. C-s U T F - 8 
+03. C-s I n s t r u c t i o n s C-s 
+04. C-s H T M L C-b C-b C-b
+05. C-s a r r o w M-b
+06. C-e
+07. C-a
+08. C-x [
+09. No
+10. Commands listed above
+11. C-x C-c
+
+Exercise 1.2: Deleting text in Emacs
+01. e m a c s SP e x e r 2 Tab Enter
+02. M-g 1 8 Enter C-k
+03. C-s D E L C-a C-k C-s D E L C-a C-k C-s D E L E T E M
+04. C-s h t t p : / / e C-a C-k C-s h t t p : / / e C-a C-k C-s h t t p : / / e
+05. C-x C-c
+    (diff -u exer1.html exer2.html >exer2.diff)
+
+Exercise 1.3: Inserting text in Emacs
+01. e m a c s SP e x e r 3 Tab Enter
+02. M-% A s s i g n m e n t 1 Enter A s s i g n m e n t 3 7 Enter SP SP q
+03. M-% U T F - 8 Enter U S - A S C I I Enter SP q
+04. C-s < o C-e Enter
+05. C-x C-c
+    (diff -u exer1.html exer2.html >exer2.diff))
+
+Exercise 1.4: Other editing tasks in Emacs
+
+01. cat exer2.html exer2.diff >exer4.html
+02. e m a c s SP e x e r 4 Tab Enter
+03. C-x ]
+    M-g g 3 9 0 Enter C-k M-g g 3 0 2 Enter C-y    
+04. M-g g 3 6 1 Enter C-k C-s M-g g 18 Enter C-y
+    C-s d e l C-a C-k M-g g 94 Enter C-y M-g g 1 5 6 Enter C-y
+    M-g 3 8 0 Enter C-k M-g 1 5 7 Enter C-y
+05. M-g g 3 5 6 C-u 39 C-k
+06. C-x u
+07. M-g g 3 5 6 Enter < ! - - M C-x ] - - >
+08. M-% < o l > Enter < O L > Enter y y y y y y y
+    7 instances 
+09.diff -u exer1.html exer4.html >exer4.diff
+
+
+
+Exercise 1.5:
+
+01. M-x m a k e - d i r e c t o r y Enter ~ / j u n k Enter
+02. C-x C-f ~ / j u n k / h e l l o . c Enter
+03. M-x c o m p i l e Enter ~ / j u n k / h e l l o
+04. M-x c o m p i l e . / h e l l o SP - o SP h e l l o - o u t Enter
+05. (I am using Emacs on lnxsrv07 with terminal to do the exercise while keeping the log with Emacs on my Mac, so I just copy paste the result)
+-*- mode: compilation; default-directory: "~/junk/" -*-
+Compilation started at Fri Apr  1 21:17:32
+
+./hello hello-out
+#include <stdio.h>
+int
+main (void)
+{
+  char n = '\n';
+  char b = '\\';
+-*- mode: compilation; default-directory: "~/junk/" -*-
+Compilation started at Fri Apr  1 21:17:32
+
+./hello hello-out
+#include <stdio.h>
+int
+main (void)
+{
+  char n = '\n';
+  char b = '\\';
+  char q = '"';
+  char const *p = "#include <stdio.h>%cint%cmain (void)%c{%c  char n = '%cn';%c\
+  char b = '%c%c';%c  char q = '%c';%c  char const *p = %c%s%c;%c  printf (p, n\
+, n, n, n, b, n, b, b, n, q, n, q, p, q, n, n, n, n);%c  return 0;%c}%c";
+  printf (p, n, n, n, n, b, n, b, b, n, q, n, q, p, q, n, n, n, n);
+  return 0;
+}
+
+Compilation finished at Fri Apr  1 21:17:32
+
+Exercise 1.6: Running Elisp code
+
+01. C-x b * s c r a t c h * Enter
+02. ( r a n d o m) C-j
+03. (setq x (random)) C-j Enter Output: -713209235452896036
+    (setq y (random)) C-j Enter Output: 176272396910129296
+    (setq z (random)) C-j Enter Output: 1288158952104053932
+04. Result: -1936369000115591936 
+    Seems incorrect in magnitude
+05. Result: -1936369000115591936 (#o224405052353202022400, #x2520a2a75a082500)
+    The magnitude is the same, but shows octonary and hexadecimal format of the result in parentheses.
+06. No.
+    These "random" integers are computed by a certain algorithm which must have taken something as the variable, thus they could not be independent values that do not depend on anything.
