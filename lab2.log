@@ -1,0 +1,113 @@
+=====================================
+I denote every command line by $
+=====================================
+
+1. Following the instruction, run
+        $export LC_ALL='C'
+   using
+	$locale
+   to check the output
+2. create the sorted 'words' file
+   	$ cat </usr/share/dict/words | sort >~/Desktop/lab/words
+3. get the webpage
+       $wget http://web.cs.ucla.edu/classes/spring16/cs35L/assign/assign2.html 
+   1) tr -c 'A-Za-z' '[\n*]'
+      	    $cat assign2.html | tr -c 'A-Za-z' '[\n*]'
+      	 The option '-c' means the complement of the given set(learn
+	 from $man tr). This command replaces all non-alphabet
+	 characters with a new line.
+   2) tr -cs 'A-Za-z' '[\n*]'
+      	    $cat assign2.html | tr -cs 'A-Za-z' '[\n*]'
+      	 The option '-s' stands for squeeze(learn from $man tr),
+	 Compared to the first output, this output delete the extra
+	 new lines so that vertically there are no blanks between two words.
+   3) tr -cs 'A-Za-z' '[\n*]' | sort
+      	     $cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort
+      	 This command pipes the results from tr to sort function, thus it
+	 outputs an alphabetically sorted result on the basis of previous
+	 output.
+   4) tr -cs 'A-Za-z' '[\n*]' | sort -u
+      	     $cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u
+	 The option '-u' stands for "unique". Compared to the previous result,
+	 this output deletes all the duplicates and prints a sorted list
+	 of unique words.
+   5) tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words
+      	   $cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words
+	 comm function: Compare sorted files FILE1 and FILE2 line by line.
+	 (learn from man comm) This outputs 3 columns.
+	 column 1: words unique to the first file (assgin2.html)
+	 column 2: words unique to the second file (words)
+	 column 3: words that appear in both files (assign2.html and words)
+   6) tr -cs 'A-Za-z' '[\n*]'| sort -u | comm -23 - words
+      	   $cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u
+	   | comm -23 - words
+        Compared to the output of 5), this line only outputs the first line
+	which is unique to file 1 (assign2.html)
+4. buildword
+
+buildword.sh
+#! /bin/bash
+
+#remove all HTML tags
+sed 's/<[^>]*>//g' |
+
+#change all ` into '
+sed "s/\`/\'/g" |
+
+#change uppercase letter into lowercase letter
+tr '[:upper:]' '[:lower:]' |
+
+#take all the Hawaiian words out
+grep -x "[p k \' m n w l h a e i o u]\+" |
+
+#squeeze and sort the word list, no duplication
+tr -s '[:blank:]' '\n' | sort -u |
+
+#delete the new line at the beginning
+sed '1d'
+
+#Bugs: it could distinguish English words that only
+contain Hawaiian letters. (i.e. whale)
+
+5. spell checker
+
+#to get hwords file
+$ ./buildwords < hwnwdseng.htm > hwords 
+
+#Hawaiian spell checker:
+
+for words misspelled in Hawaiian:
+$cat assign2.html | tr -cs 'A-Za-z' '[\n*]' |
+| tr [:upper:] [:lower:] | sort -u | comm -23 - hwords | wc -l
+
+Output: 405
+
+for words misspelled in English:
+$cat assign2.html | tr -cs 'A-Za-z' '[\n*]' |
+| tr [:upper:] [:lower:] | sort -u | comm -23 - words | wc -w
+
+Output: 39
+
+To see the difference in output, saving the result
+of spell checking to files named eh.txt and ee.txt
+
+$cat assign2.html | tr -cs 'A-Za-z' '[\n*]' |
+| tr [:upper:] [:lower:] | sort -u | comm -23 - hwords >eh.txt
+
+$cat assign2.html | tr -cs 'A-Za-z' '[\n*]' |
+| tr [:upper:] [:lower:] | sort -u | comm -23 - words >ee.txt
+
+#words misspelled in Hawaiian but not in English:
+$comm eh.txt ee.txt -23 (| wc -l)
+Output: 368
+i.e: za,z,...
+
+#words misspelled in English but not in Hawaiian:
+$comm eh.txt ee.txt -13 (| wc -l)
+Output: 2
+i.e: wiki, lau
+ 
+#words misspelled in both
+$comm eh.txt ee.txt -12 (| wc -l)
+Output: 37
+i.e: www, wikipedia,...

@@ -1,0 +1,19 @@
+#! /bin/bash                                                                    
+
+#remove all HTML tags                                                           
+sed 's/<[^>]*>//g' |
+
+#change all ` into '                                                            
+sed "s/\`/\'/g" |
+
+#change uppercase letter into lowercase letter                                  
+tr '[:upper:]' '[:lower:]' |
+
+#take all the Hawaiian words out                                                
+grep -x "[p k \' m n w l h a e i o u]\+" |
+
+#squeeze and sort the word list, no duplication                                 
+tr -s '[:blank:]' '\n' | sort -u |
+
+#delete the new line at the beginning                                           
+sed '1d'

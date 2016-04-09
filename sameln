@@ -1,0 +1,48 @@
+#! /bin/bash                                                                    
+
+dir=$1
+RESULT=`ls -a $dir | sort`
+#echo "$dir"                                                                    
+
+let COUNT=0
+declare -a ARRAY
+
+for FILE in $RESULT
+    do
+        if [ ! -r "$dir/$FILE" ]
+	then
+            echo $"Do not have the permission to read the file $dir/$FILE "
+	else
+        if [ -f "$dir/$FILE" ]
+        then
+           ARRAY[$COUNT]="$dir/$FILE"
+           let COUNT=COUNT+1
+        fi
+        fi
+done
+
+for F1 in "${ARRAY[@]}"
+do
+    for F2 in "${ARRAY[@]}"
+    do
+        let ido=`ls -i $F1 | tr -dc '0-9'`
+        let id=`ls -i $F2 | tr -dc '0-9'`
+        if ! test $ido -eq $id
+        then
+            cmp -s $F1 $F2
+            let t=$?
+            #echo $"executed"                                                   
+            if test $t -eq 0
+            then
+               rm $F2
+               ln $F1 $F2
+              # echo $"executed"                                                
+            else
+                if test $t -gt 1
+                then
+                    echo$ "an error has occurred while using cmp"
+		fi
+            fi
+         fi
+    done
+done
