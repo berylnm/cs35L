@@ -1,0 +1,74 @@
+I use '$' to denote command lines
+========================================
+
+1. I use wget to grab Coreutils 7.6
+     $ wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+
+2. I use mkdir to make a new directory under home for coreutils
+     $ mkdir coreutilsInstall
+
+3. I use tar to unzip the Coreutils to coreutilsInstall,
+   using -C command to change the target directory from
+      default (learn from $man tar)
+           $ tar -xzvf coreutils-7.6.tar.gz -C ~/coreutilsInstall
+
+4. I go into the coureutils-7.6 directory to read
+   README and INSTALL file to learn how to use make
+      and make install for this specific case.
+           $ cd ~/coreutilsInstall/coreutils-7.6
+	   $ cat README
+	   $ cat INSTALL
+
+5. I run the configure script using the prefix
+   flag since we do not have access to write
+      in /usr/bin
+           $ ./configure --prefix=/u/eng/class/classbwu/coreutilsInstall
+
+6. I use make to compile it and use make install to install it
+     $ make
+     $ make install
+
+7. I reproduce the date bug by using this buggy 'ls' command at HOME
+   directory
+        $ ~/coreutilsInstall/bin/ls -l ~/
+	   The output date is the form as described in the spec.
+	      Few examples of the Output:
+-rw-r--r-- 1 classbwu class 10014650 2016-04-11 16:57 coreutils-7.6.tar.gz
+drwxr-xr-x 6 classbwu class     4096 2016-04-12 10:09 coreutilsInstall
+	      ....
+
+8. I go into use vim to get the content of the patch (piazza comments say
+   that using emacs might have unnecessary trouble) into barpatch
+   Then I use patch command to apply this patch, and compile the
+   modified ls
+	  $ cd coreutils-7.6
+	  $ patch -p1 <patch
+ 	  $ make
+
+9. I create a test directory and test files for testing purposes.
+     $ mkdir test
+     $ touch newtest
+     $ touch -t 19970218.30 oldtest
+       	     	...
+1)Run the modified version of ls
+      $ ~/coreutilsInstall/coreutils-7.6/src/ls -l ~/test
+
+Output examples:
+     -rw-r--r-- 1 classbwu class 0 Apr 12 22:55 newtest
+     -rw-r--r-- 1 classbwu class 0 Feb 18  1997 oldtest
+	       ...
+     matches the correct format
+     The file that is recently modified shows the modified time to
+     the scale of minutes, while the file that is at least a year
+     old will show the modified year instead of hours and minutes
+     at the same position right after the month and day.
+2)
+    Run the old version of ls:
+       $ ~/coreutilsInstall/bin/ls -l
+
+Output examples:
+     -rw-r--r-- 1 classbwu class 0 2016-04-12 22:55 newtest
+     -rw-r--r-- 1 classbwu class 0 1997-02-18 03:39 oldtest
+	       ...
+     The output of the buggy version is still in the wrong format.
+		    
