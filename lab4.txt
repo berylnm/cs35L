@@ -1,0 +1,153 @@
+==================================
+I use '$' to denote command
+==================================
+1. I use wget to get a copy of the Diffutils repository
+   in a newly created directory ~/gitroot
+      $ mkdir gitroot
+      $ cd gitroot
+      $ git clone ~eggert/src/gnu/diffutils
+    Thus I get a diffutils directory.
+
+2. I get into the diffutils directory and get a the log
+   of the changes to master branch and store the log	
+   into git-log.txt
+      $ cd diffutils
+      $ git log >git-log.txt
+
+3. I use "git tag" command to generate a list of tags used 
+   for Diffutils and store this list into git-tags.txt
+      $ git tag >git-tags.txt
+
+4.
+   1)I use fgrep and -B option to find the line that matches
+     the pattern of "maint: quote" to get the required commit
+     "-B n" in grep command shows n number of lines before the
+     line that matches the given pattern (learn from $man fgrep) 
+       $ fgrep -B 4 "maint: quote" git-log.txt
+
+    The output I get is:
+       commit 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f
+Author: Paul Eggert <eggert@cs.ucla.edu>
+Date:   Wed Jan 25 23:46:16 2012 -0800
+
+    maint: quote 'like this' or "like this", not `like this'
+
+So I get that the commit 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f
+is what I need
+
+   2) I use git show to get the change made by this commit
+      and store it into quote-patch.txt
+       $ git show 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f >quote-patch.txt
+
+5. I use "git checkout" and the tag "v3.0" to check out
+   version 3.0 of Diffutils from the repository
+       $ git checkout v3.0
+   It outputs:
+   ....
+   HEAD is now at 022cd5c... version 3.0
+
+6. I use "patch" command to apply the patch, and use RETURN to
+   skip those patches that can not find which file to apply
+       $ patch -p1 <quote-patch.txt
+
+       several patches like patch to "HACKING", "/man/help2man" could
+   not find files to apply.
+       several hunks of different patches like patch to src/diff3.c
+   failed to apply and and automatically save the rejects to FILENAME.rej
+
+7. I use git status to get an overview of what happened
+       $ git status
+
+   And I get output like:
+   # HEAD detached at v3.0
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   NEWS
+#	modified:   README
+#	modified:   TODO
+#	modified:   doc/diagmeet.note
+#	modified:   ms/config.bat
+......
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	NEWS.orig
+#	README-hacking.orig
+#	README-hacking.rej
+....
+no changes added to commit (use "git add" and/or "git commit -a")
+
+8. I read through the webpages and practice in Emcas to use functions
+   vc-diff (C-x v =), vc-revert (C-x v u) ,diff-apply-hunk (C-c C-a) and
+   functions to revert the applied hunk (C-u C-c C-a)
+
+9. I use vc-diff and vc-revert to revert the non-.c files like
+   README manually. Then I go through the remaining .c files and
+   revert the applied hunks that make change only to comments by
+   using vc-diff and the revert function (C-u C-c C-a)
+
+   Thus, when I run $git status again, the modifed files are
+#   	modified:   src/cmp.c
+#	modified:   src/diff.c
+#	modified:   src/diff3.c
+#	modified:   src/dir.c
+#	modified:   src/sdiff.c
+#	modified:   src/util.c
+   with several untracked files listed after this.
+
+10. I carefully read the rejected patches and applied them to
+    the corresponding files manually. These hunks do not successfully
+    apply to the files because of the shift of lines in the
+    target files.
+
+11. I copy the required files for homework to another directory and run
+    git clean -f to get rid of all the untracked files.
+     $ cp ./git-log.txt ~/git-log.txt
+     $ cp ./git-tags.txt ~/git-tags.txt
+     $ cp ./quote-patch.txt ~/quote-patch.txt
+     $ git clean -f
+
+12. I run git status and see a half dozen of modifed files as described.
+    I then run git diff which is around three to four hundreds long.
+      $ git status
+    which has the same output as in step 9 without the untracked 
+    files part.
+      $ git diff >quote-3.0-patch.txt
+
+13. I read README-hacking at first. I run the ./bootstrap and 
+    apply the extra patch (I use lnxsrv09). Then I run ./configure
+    and make the file and use $ make check to check.
+      $ cat README-hacking
+      $ ./bootstrap
+      $ cd ./lib
+      $ patch -p1 <patch
+      $ cd ..
+      $ make 
+      $ make check
+    
+    I verify the output of the just-built diff with "diff . -" and 
+    "diff --help"
+      $ ./diff . -
+    The output is :
+    	./diff: cannot compare '-' to a directory
+      $ ./diff --help
+      
+14. After copying the source code of the modified version,I checkout the
+    original v3.0 version of Diffutils and run the just-built
+    diff to compare the source code('/src' directory) I copy the directories
+    that contain source code and use diff to compare the two versions.
+     $ cp -rf ./src ~/diffutils-3.0-patch
+     $ cp ./quote-3.0-patch.txt ~/quote-3.0-patch.txt
+     $ git checkout v3.0
+     $ cp -rf ./src ~/diffutils-3.0
+     $ ~/diffutils-3.0-patch/diff -pru diffutils-3.0 diffutils-3.0-patch
+       >~/quote-3.0-test.txt
+
+15. I use the default diff to compare the contents of quote-3.0-test.txt
+    and quote-3.0-patch.txt
+    	$ diff quote-3.0-test.txt quote-3.0-patch.txt
+    Although the outputs seem to have great difference, they are common in
+    content but different in the paths and orders. Since they are not really
+    different in content, these differences are innocuous.

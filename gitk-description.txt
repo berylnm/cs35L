@@ -1,0 +1,23 @@
+1. The upper left window shows the commits of this repository, ranked
+   by the time order, with the most recent on top.
+   The yellow circle represents the HEAD, while the blue ones
+   represent normal branches.
+   Every commit has its own commit message within this window.
+   It also shows branches that deviate from the original path.
+
+2. The window in the upper middle shows the author of the commit listed
+   in its left.
+
+3. The window in the upper right shows the date of the commit.
+
+4. The window in the lower right shows the files that are impacted by 
+   the selected commit.
+
+5. The middle line with name "SHA ID" shows the certain value 
+   (hash value) which identify a single commit.
+
+6. The top of the two windows in lower left shows the details of the 
+   selected commit including the committer, the date, the parent commit,
+   the child commit, the branch of this commit, the commit message, etc.
+
+7. The lower of the two shows the content of changing of this commit.
