@@ -1,0 +1,161 @@
+============================
+I use $ to denote command
+============================
+
+1. I use wget to get the required version of coreutils
+     $ wget http://web.cs.ucla.edu/classes/spring16/cs35L/assign
+       /coreutils-with-bug.tar.gz
+
+2. I use tar to unzip the it
+     $  tar -zxvf coreutils-with-bug.tar.gz
+
+3. After reading README and INSTALL, I run ./configure with changed
+   compiler optimizations and then run make but encounter error
+     $ cd coreutils-with-bug
+     $ cat README
+     $ cat INSTALL
+     $ ./configure CFLAGS="-O0 -g"
+     $ make
+
+ The error message part of the output of make is:
+     .....
+     In file included from utimecmp.c:41:0:
+utimens.h:2:5: error: conflicting types for 'futimens'
+ int futimens (int, char const *, struct timespec const [2]);
+     ^
+In file included from utimecmp.h:25:0,
+                 from utimecmp.c:25:
+/usr/include/sys/stat.h:373:12: note: previous declaration of 'futimens'
+was here
+ extern int futimens (int __fd, const struct timespec __times[2]) __THROW;
+            ^
+Makefile:659: recipe for target 'utimecmp.o' failed
+
+4. Since the given version have declare different type of function with the
+   same function name 'futimens', it meets a type conflict and needs a patch
+   to fix this.
+   I copy and paste the content of the patch into p1 using vim (using emacs
+   will cause unexpected error), and then apply the patch
+    $ vim p1
+    $ patch -p0 <p1
+
+    At this time, there's no error when I run make
+    $ make
+
+5. To reproduce the bug, I follow the step listed in spec, creating a temporary
+   directory and test the newly built ./src/ls
+$ tmp=$(mktemp -d)
+$ cd $tmp
+$ touch -d '1918-11-11 11:00 GMT' wwi-armistice
+$ touch now
+$ sleep 1
+$ touch now1
+$ TZ=UTC0 ~/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+
+And I get the buggy output like this:
+-rw-r--r-- 1 classbwu class 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 classbwu class 0 2016-04-27 04:00:10.420285542 +0000 now1
+-rw-r--r-- 1 classbwu class 0 2016-04-27 04:00:08.155250075 +0000 now
+
+6. To find the buggy line, I run the /src/ls with gdb and use info functions
+   to get a general idea of functions related with this executable
+      $ gdb ~/coreutils-with-bug/src/ls
+
+   1) First, I run the executable again to test its performance in gdb buffer
+      $ run -lt wwi-armistice now now1
+   The output is the same as previous command.
+
+   2) Then I use info functions to find a seemingly related function by name
+      to start with
+       $ (gdb) info functions
+
+      And from the list of the functions, I locate several functions with
+      keyword 'time' in the ls.c file such as cmp_atime, cmp_mtime,etc.
+
+    3) I quit the gdb buffer and open the ls.c file to find the possible
+       cause for this bug. I use search in emacs to locate interesting
+       functions.
+        $ (gdb) q Enter
+	$ (gdb) quit
+	$ emacs ~/coreutils-with-bug/src/ls.c
+	$ C-s time
+       By reading the line 403 of ls.c file about the time_type, I learn that
+       time_mtime is for the default and -lt type while ctime and atime are
+       for other uninterested options. Thus, I again use mtime as keyword
+        $ C-s mtime
+
+    4) With the help of comments  I find the cmp_mtime function which I think
+       might be responsible for the bug. Thus, I enter the gbd buffer and set
+       a breakpoint at the cmp_mtime funciton to see what's going on.
+        $ gdb ~/coreutils-wth-bug/src/ls
+	$ (gdb) break cmp_mtime
+	$ (gdb) run -lt wwi-armistice now now1
+      Then after using s/n/f/c several times I find timespec.h as responsibile
+      for the compare part of date.
+
+     5) I quit the gdb buffer and open lib/timespec.h. According to the
+     description of the comment, I think the integer overflow might be cause in
+     this case. So instead of subtracting a from b, I change it to if and if
+     else statements, which returns -1,0 or 1. Before changing timespec.h,
+     I copy the timespec.h for the following diff part.
+        $ cd coreutils-with-bug
+	$ cd lib
+	$ cp timespec.h timespecori.h
+	$ emacs timespec.h
+	(the detail of changing is in lab5.diff)
+
+     6) To update the newly changed timespec.h, I run make again and test the
+     	ls in a temporary directory as before.
+	$ cd ..
+	$ make
+	$ cd $tmp
+	$ ~/coreutils-with-bug/src/ls -lt wwi-armistice now now1
+      The output is in the correct format:
+-rw-r--r-- 1 classbwu class 0 2016-04-27 09:17 now
+-rw-r--r-- 1 classbwu class 0 2016-04-27 09:17 now1
+-rw-r--r-- 1 classbwu class 0 1918-11-11 03:00 wwi-armistice
+
+7. I use diff -u to creat a patch and add to ChangeLog via emacs.
+     	$ cd ~/coreutils-with-bug/lib
+	$ diff -u timespecori.h timespec.h >lab5.diff
+	$ emacs timespec.h
+	$ (emacs) C-x 4 a
+	(The content is in lab5.diff)
+	$ emacs  lab5.diff
+   To save the lab5.diff for further use, I get a copy of it in the home directory
+
+8. I test the patch by rebuilding the old version, reproducing the bug,
+   and then applying the patch to see the outcome.
+       (The building process is the same as the first four steps)
+   The buggy output before applying the patch is stil:
+-rw-r--r-- 1 classbwu class 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+-rw-r--r-- 1 classbwu class 0 2016-04-27 16:53:14.815235060 +0000 now1
+-rw-r--r-- 1 classbwu class 0 2016-04-27 16:53:12.982206364 +0000 now
+
+   $ cd ~/coreutils-with-bug/lib
+   $ cp ~/lab5.diff lab5.diff
+   $ patch -p0 <lab5.diff
+ It outputs:
+    patching file timespec.h
+
+Then I run make again to apply the patch  
+   $ cd ..
+   $ make
+   $ cd $tmp
+   $ TZ=UTC0 ~/coreutils-with-bug/src/ls -lt wwi-armistice now now1
+
+The output is the correct foramt, the patch works:
+-rw-r--r-- 1 classbwu class 0 2016-04-27 16:53:12.982206364 +0000 now
+-rw-r--r-- 1 classbwu class 0 2016-04-27 16:53:14.815235060 +0000 now1
+-rw-r--r-- 1 classbwu class 0 1918-11-11 11:00:00.000000000 +0000 wwi-armistice
+
+9.When reproducing the problem in the home directory on SEASnet Linux servers,
+The output of ls changes the date of '1918-11-11' to something around 2054. It
+is because local file system on linus server has signed 32-bit time stamps, while 
+SEASnet NFS filesystem has unsigned 32-bit time stamp. Because it's unsigned,
+even though it's created by touch with an ancient time, in addition to the wrong 
+order, the code would inteprete and display the given date as sometime in 
+future.
+
+Using the already-installed touch and ls utilities instead of the old version of 
+coreutils still results in the buggy version of date in the home directory.
