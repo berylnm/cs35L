@@ -1,0 +1,31 @@
+016-04-27  Binyi Wu  <classbwu@lnxsrv09.seas.ucla.edu>
+
+        * timespec.h: avoid the integer overflow by changing subtraction
+	  into if and if else statement for comparision. Thus, time before
+	  1970 won't appear like in the future.
+
+
+--- timespecori.h	2016-04-26 22:40:38.355324000 -0700
++++ timespec.h	2016-04-26 23:17:59.965584000 -0700
+@@ -45,8 +45,20 @@
+ static inline int
+ timespec_cmp (struct timespec a, struct timespec b)
+ {
+-  int diff = a.tv_sec - b.tv_sec;
++  /*int diff = a.tv_sec - b.tv_sec;
+   return diff ? diff : a.tv_nsec - b.tv_nsec;
++  */
++  int diff;
++  if (a.tv_sec<b.tv_sec|| a.tv_nsec<b.tv_nsec)
++    diff = -1;
++  else if (a.tv_sec==b.tv_sec || a.tv_nsec==b.tv_nsec)
++    diff = 0;
++  else
++    diff = 1;
++  return diff;
++  
++  
++
+ }
+ 
+ # if ! HAVE_DECL_NANOSLEEP
