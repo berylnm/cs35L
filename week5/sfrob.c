@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     wordnum=1;
   while (ch!= EOF)
     {
-      if (n==length)
+      if (n==length-1)
 	{
 	  length*=2;
 	  buffer=realloc(buffer,length*sizeof(char));
@@ -71,6 +71,7 @@ int main(int argc, char **argv)
        }
       n++;
     }
+  buffer[n-1]=' ';
   //printf("%d",wordnum);
   /*  
      for (int i=0;i<n;i++)
@@ -142,7 +143,7 @@ int main(int argc, char **argv)
      }
   */
 
-   qsort(word,wordnum,sizeof(char*),cmp);
+  qsort(word,wordnum,sizeof(char*),cmp);
   for (int i=0;i<wordnum;i++)
     {
       int j=0;
