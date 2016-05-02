@@ -151,7 +151,7 @@ int main(int argc, char **argv)
      }
   */
 
-  // qsort(word,wordnum,sizeof(char*),cmp);
+  qsort(word,wordnum,sizeof(char*),cmp);
   for (int i=0;i<wordnum;i++)
     {
       int j=0;
