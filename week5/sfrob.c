@@ -9,13 +9,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 int cmp(const void*a, const void*b);
 int compare(char const *a,char const *b);
 int frobcmp(char const *a, char const *b);
 
+int main(int argc, char **argv)
+{
+  if (argc!=1)
+    {
+      fprintf(stderr,"input error");
+      exit(1);
+    }
 
-int main()
-{   int length = 100;
+  int length = 100;
   char* buffer =malloc(length*sizeof(char));
   if (buffer==0)
     {
@@ -25,8 +32,10 @@ int main()
 
   char ch=getchar();
   int n=1;
-  int wordnum=1;
-  while (ch != EOF)
+  int wordnum=0;
+  if (ch!=' ')
+    wordnum=1;
+  while (ch!= EOF)
     {
       if (n==length)
 	{
@@ -38,19 +47,32 @@ int main()
 	      exit(1);
 	    }
 	}
-      if (ch==' ')
-	wordnum++;
+ 
+      if (ch==' '&& n==1 && wordnum==0)
+	{       ch=getchar();
+	        continue;
+	}
       if (ch==' '&&n>1&&buffer[n-2]==' ')
-	ch=getchar();
-      else
+	{      ch=getchar();
+	  continue;
+	}
+      if (ch==' '&&n>1)
 	{
+	  if (wordnum==0)
+	    wordnum=1;
+	  wordnum++;
 	  buffer[n-1]=ch;
 	  ch=getchar();
 	}
+     else
+      {
+	  buffer[n-1]=ch;
+	  ch=getchar();
+       }
       n++;
     }
-
-  /*
+  //printf("%d",wordnum);
+  /*  
      for (int i=0;i<n;i++)
      putchar(buffer[i]);
   */
@@ -59,12 +81,18 @@ int main()
   //    int n=sizeof(buffer);
   //
 
+  if (errno!=0)
+    {
+      fprintf(stderr,"input error");
+      exit(1);
+    }
+  
   char** word=malloc(wordnum*sizeof(char *));
-    if (word==0)
-      {
-	fprintf(stderr,"memory allocating error");
-	exit(1);
-      }
+  if (word==0)
+    {
+      fprintf(stderr,"memory allocating error");
+      exit(1);
+    }
 
   int mark=0;
 
@@ -114,13 +142,13 @@ int main()
      }
   */
 
-  qsort(word,wordnum,sizeof(char*),cmp);
+   qsort(word,wordnum,sizeof(char*),cmp);
   for (int i=0;i<wordnum;i++)
     {
       int j=0;
       while(word[i][j]!=' ')
 	{    putchar(word[i][j]);
-	    j++;
+	  j++;
 	}
       putchar(' ');
     }
@@ -130,7 +158,7 @@ int main()
       free (word[i]);
     }
   free (word);
-free (buffer);
+  free (buffer);
   exit(0);
 }
 
@@ -208,7 +236,7 @@ int frobcmp(char const *a, char const *b)
 
 }
 
- 
+
 int cmp(const void*a, const void*b)
 {
   char* a1=*(char**)a;
