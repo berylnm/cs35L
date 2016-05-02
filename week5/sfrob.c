@@ -33,6 +33,8 @@ int main(int argc, char **argv)
   char ch=getchar();
   int n=1;
   int wordnum=0;
+  if (ch==EOF&&errno==0)
+    exit(0);
   if (ch!=' ')
     wordnum=1;
   while (ch!= EOF)
