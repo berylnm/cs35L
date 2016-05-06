@@ -1,0 +1,27 @@
+1.
+   For the first part of the question, the answer is Yes. Although others could
+   observe all the bytes, the bytes are already encrypted so that they won't
+   be able to understand the content. Thus, the resulting network is still
+   secure.
+
+   1)The resulting network might be insecure because if the others could
+   inspect every keystrokes of the team, they'll know the username and password
+   one created for authentication. They then could ssh into the server without
+   being suspected. Furthermore, they will know the passphrase
+   to decrypt the private key so that if they could gain obtain the private
+   key, they will be able to decrypt it and therefore read and modify files
+   without restrictions.
+
+   2)The resulting network is insecure because others will be able to
+   obtain the generated keys, and thus they are able to decrypt the content
+   of files when observing all bytes.
+
+2. The gpg --verify command only show the signatrue information, since the
+   information is determined only by the creator, everyone could use
+   fake information. Thus,  the gpg --verigy command won't be able to know
+   who really creates the file but simply take the input information.
+
+   A solution to this problem might be to meet someone in person in order to
+   give/get the public key. 
+   Or we could use a third party CA which can for sure verify the identity of
+   the file creator.
