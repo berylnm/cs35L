@@ -1,0 +1,131 @@
+====================================
+I denote the command line by '$'
+====================================
+1. I creat test file of 10, 100, 1000, 100000, 1000000 words.
+There are iterations of '_CIA *hXE]D *LER #@_GZY s,d askmr |wekjq ksdnfv
+ekjgef wekjvnk'. The files are file, small_file.txt, 
+
+Then I compile the programs.
+$ gcc sfrob.c -o sfrob
+$ gcc sfrobu.c -o sfrobu
+$ chmod +x sfrobs
+
+2. These are the tests.
+
+1) I run on the file of 10 words.
+   $ time ./sfrob < file > output
+   real	0m0.003s
+   user	0m0.000s
+   sys	0m0.001s
+
+   $ time ./sfrobs < file > output
+   real	0m0.011s
+   user	0m0.003s
+   sys	0m0.008s
+
+   $ time ./sfrobu < file > output
+   Comparison: 23
+
+   real	0m0.004s
+   user	0m0.000s
+   sys	0m0.001s
+2) I run on the file of 100 words.
+
+   $ time ./sfrob < small_file.txt > output
+     real	0m0.005s
+     user	0m0.000s
+     sys	0m0.001s
+
+   $ time ./sfrobs < small_file.txt > output
+     real	0m0.025s
+     user	0m0.002s
+     sys	0m0.006s
+
+   $ time ./sfrobu < small_file.txt > output
+   Comparison: 479
+
+   real	       0m0.005s	
+   user	       0m0.000s
+   sys	       0m0.002s
+
+3) I run on the file of 1000 words.
+
+   $ time ./sfrob < smallmedian_file.txt > output
+   real	0m0.005s
+   user	0m0.002s
+   sys	0m0.000s
+
+   $ time ./sfrobs < smallmedian_file.txt > output
+   real	0m0.010s
+   user	0m0.002s
+   sys	0m0.006s
+
+   $ time ./sfrobu < smallmedian_file.txt > output
+   Comparison: 7591
+
+   real	0m0.012s
+   user	0m0.001s
+   sys	0m0.009s
+
+4) I run on the file of 100000 words.
+
+   $ time ./sfrob < large_file.txt > output
+   real	0m0.116s
+   user	0m0.095s
+   sys	0m0.011s
+
+   $ time ./sfrobs < large_file.txt > output
+   real	0m0.045s
+   user	0m0.025s
+   sys	0m0.012s
+
+   $ time ./sfrobu < large_file.txt > output
+   Comparison: 1323070
+
+   real	0m0.850s
+   user	0m0.122s
+   sys	0m0.717s
+
+5) I run on the file of 1000000 words.
+
+   $ time ./sfrob < sularge_file.txt > output
+   real	0m1.464s
+   user	0m1.286s
+   sys	0m0.068s
+
+   $ time ./sfrobs < sularge_file.txt > output
+   real	0m0.434s
+   user	0m0.293s
+   sys	0m0.046s
+
+   $ time ./sfrobu < sularge_file.txt > output
+   Comparison: 16057642
+
+   real	0m8.639s
+   user	0m1.543s
+   sys	0m7.007s
+
+3. Answer to the questions:
+
+1) The difference between sfrob and sfrobu.
+   Sfrob takes less time to run the test than sfrobu.
+   
+   As the number of words grows, the difference between the performance
+   of sfrob and sfrobu becomes apparent. First of all,  It takes more time
+   for sfrobu to run the given tests. Second, since we directly use system
+   call in sfrobu, the time costs on system call of sfrobu is longer than
+   that of sfrob. I think this might be the reason why sfrobu costs more
+   time than sfrob since system call is expansive and takes time.
+
+2) Estimate comparison time.
+   f(n word)=nlogn.
+
+   By observing the test result, the time complexity is bigger than O(n) but
+   much smaller than O(n^2). So by knowledge of time complexity I guess the
+   function of comparison time is approximately f(n words)=nlogn, which matches
+   the time complexity of sorting algorithm O(nlogn).
+
+3) Sfrobs, sfrob and sfrobu.
+
+   As test case grows, the shell script takes less time to run the test than
+   sfrob and sfrobu. It's optimized and has better performance.

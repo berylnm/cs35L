@@ -1,0 +1,157 @@
+=====================================
+I denoted the command line with $
+=====================================
+1.2.
+For the two C pograms, the details are in tr2b.c and tr2u.c
+Basically, I check the number of arguments first, then i compare the length of 
+the two inputs. After that, I check whether there are duplicate bytes in the 
+'from' part. Then, I iterate through the end of the input and check every 
+character if it matches the input and output the changed character if it 
+matches, or output the original one if it doesn't.
+
+The difference between the two programs is, I use system call instead of library
+functions in tr2u.c.
+
+3.
+   I create a file that contains at least 5,000,000 bytes first by
+      $ dd if=/dev/urandom of=test.txt bs=1M count=5
+   To verify its size, I run $ ls -l test.txt and get the result:
+      -rw-r--r-- 1 classbwu class 5242880 May 11 09:01 test.txt
+
+
+1) For tr2b.c
+   I first run $ g++ tr2b.u -o tr2b to compile it.
+
+(a) when copying one file to another
+    $ strace -c ./tr2b 'ab' 'xy' < test.txt >testResult.txt
+
+The output is:
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 32.77    0.000194           2        80           write
+ 19.26    0.000114           1        85           read
+ 16.89    0.000100           6        18           mmap
+ 10.98    0.000065           7        10           mprotect
+  6.08    0.000036           7         5           open
+  5.41    0.000032           5         7           fstat
+  3.21    0.000019           4         5           close
+  1.86    0.000011          11         1           munmap
+  1.18    0.000007           7         1         1 access
+  1.18    0.000007           7         1           execve
+  0.68    0.000004           4         1           brk
+  0.51    0.000003           3         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000592                   215         1 total
+
+(b) when copying a file to the terminal
+      $ strace -c ./tr2b 'ab' 'xy' < test.txt 
+
+The output is:
+time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 97.50    0.020992           1     20812           write
+  1.15    0.000248           3        85           read
+  0.48    0.000103           6        18           mmap
+  0.29    0.000063           6        10           mprotect
+  0.17    0.000037           7         5           open
+  0.15    0.000032           5         7           fstat
+  0.09    0.000019           4         5           close
+  0.05    0.000011          11         1           munmap
+  0.05    0.000011          11         1           execve
+  0.03    0.000007           7         1         1 access
+  0.02    0.000004           4         1           brk
+  0.02    0.000004           4         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.021531                 20947         1 total
+
+2) For tr2u.c
+       I run $ g++ tr2u.c -o tr2u to compile it
+
+(a) when copying one file to another
+    $ strace -c ./tr2u 'ab' 'xy' < test.txt >testResultof.txt
+The output is:
+    % time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 56.13    5.922597           1   5242880         6 write
+ 43.87    4.628286           1   5242885           read
+  0.00    0.000101           6        16           mmap
+  0.00    0.000064           6        10           mprotect
+  0.00    0.000038           8         5           open
+  0.00    0.000019           4         5           fstat
+  0.00    0.000018           4         5           close
+  0.00    0.000011          11         1           munmap
+  0.00    0.000007           7         1         1 access
+  0.00    0.000006           6         1           execve
+  0.00    0.000004           4         1           brk
+  0.00    0.000003           3         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00   10.551154              10485811         7 total
+
+By observing the results, we could see that for buffered versions have much
+fewer system calls in both cases. Also, for buffered version, when output to the
+terminal, it calls more write function than copying to files.
+
+For the unbuffered version, the system calls for both situation are the same.
+
+(b) when copying a file to the terminal
+   $ strace -c ./tr2u 'ab' 'xy' < test.txt
+
+The output is:
+time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+ 57.71    6.565173           1   5242880           write
+ 42.29    4.810256           1   5242885           read
+  0.00    0.000101           6        16           mmap
+  0.00    0.000048           5        10           mprotect
+  0.00    0.000035           7         5           open
+  0.00    0.000020           4         5           fstat
+  0.00    0.000018           4         5           close
+  0.00    0.000007           7         1         1 access
+  0.00    0.000007           7         1           execve
+  0.00    0.000004           4         1           brk
+  0.00    0.000004           4         1           arch_prctl
+  0.00    0.000000           0         1           munmap
+------ ----------- ----------- --------- --------- ----------------
+100.00   11.375673              10485811         1 total
+
+4. Measuring time
+
+1) For tr2b.c
+
+   (a) when copying one file to another
+       $ time ./tr2b 'ab' 'xy' < test.txt > file1.txt
+
+The output is:
+    real	0m0.211s
+    user	0m0.125s
+    sys		0m0.005s
+
+   (b) when copying a file to the terminal
+      $ time ./tr2b 'ab' 'xy' < test.txt
+
+The output is:
+    real	0m0.838s
+    user	0m0.170s
+    sys		0m0.064s
+
+2) For tr2u.c
+
+   (a) when copying one file to another
+      $ time ./tr2u 'ab' 'xy' < test.txt > file2.txt
+
+The output is:
+    real	0m6.847s
+    user	0m0.290s
+    sys		0m6.477s
+
+    (b) when copying a file to the terminal
+      $ time ./tr2u 'ab' 'xy' < test.txt 
+
+The output is:
+    real	0m5.419s
+    user	0m0.309s
+    sys		0m5.042s
+
+By measuring time, we could also see that it takes shorter time when using
+library functions instead of using system calls directly. The buffered I/O
+has proved its advantage since it makes less system calls, thus saving time.
