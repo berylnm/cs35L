@@ -115,7 +115,7 @@ $ chmod +x sfrobs
    for sfrobu to run the given tests. Second, since we directly use system
    call in sfrobu, the time costs on system call of sfrobu is longer than
    that of sfrob. I think this might be the reason why sfrobu costs more
-   time than sfrob since system call is expansive and takes time.
+   time than sfrob since system call is expensive and takes time.
 
 2) Estimate comparison time.
    f(n word)=nlogn.
