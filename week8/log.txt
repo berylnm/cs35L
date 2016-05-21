@@ -1,0 +1,70 @@
+====================================
+I use '$' to denote command line
+====================================
+1. First, I creat a file of size 80M.
+    $ head --bytes=80M /dev/urandom > output.txt 
+
+2. Then, I format it into floating point numbers
+   $ cat output.txt | od -tf -N80000000 >numbers.txt
+
+3. I delete the address as well as the space between double numbers to make  
+   sure that each of them occupies a line.
+   $ sed 's/[^ ]*//' numbers.txt >number.txt
+   $ cat number.txt | tr -s ' ' '\n' >double.txt
+
+Now, we have the file double.txt which contains exactly 10,000,000 words.
+
+4. I use 'time -p' to time the command 'sort -g' on my test data
+     $ time -p sort -g double.txt >/dev/null
+
+The output is:
+    real 38.56
+    user 209.77
+    sys 0.51
+
+5. Then I invoke sort with --parallel option as well as the -g option.
+
+I've set the PATH enviornment variable before, but just to make sure it has
+been set properly, I run
+       $ echo $PATH
+
+The output is:
+    /usr/local/cs/bin:/usr/lib64/qt-3.3/bin:/u/eng/class/classbwu/perl5/bin:
+    /usr/local/bin:/usr/bin:/usr/X11R6/bin:/u/eng/class/classbwu/bin
+
+It has /usr/local/cs/bin at its start.
+
+1) 1 thread
+	$ time -p sort -g --parallel=1 double.txt >/dev/null
+
+The output is:
+    real 180.74
+    user 180.37
+    sys 0.36
+
+2) 2 threads
+        $ time -p sort -g --parallel=2 double.txt >/dev/null
+	
+The output is:
+    real 93.79
+    user 178.73
+    sys 0.37
+
+3) 4 threads
+	$ time -p sort -g --parallel=4 double.txt >/dev/null
+
+The output is:
+    real 57.19
+    user 192.11
+    sys 0.47
+4) 8 threads
+	$ time -p sort -g --parallel=8 double.txt >/dev/null
+
+The output is:
+    real 38.56
+    user 211.85
+    sys 0.55
+
+ From the result above we could see that multithreading is really efficient and
+ has improved the performance. As the number of the thread increases, the speed
+ execution increases and the time used decreases.
