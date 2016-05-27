@@ -463,11 +463,23 @@ compressed files for a regular expression.
 I redirect all the valid output above into unsorted.txt
 Then I run
      $ sed 's/(.*)//' unsorted.txt >sorted.txt
+     $ sed 's/=>.*//' sorted.txt >sort.txt
 to get rid of the address.
 Then I sort it.
+     $ sort -u sort.txt
 
 The output is:
 	/lib64/ld-linux-x86-64.so.2 
+	libICE.so.6 
+	libQtCore.so.4 
+	libSM.so.6 
+	libX11.so.6 
+	libXau.so.6 
+	libXaw.so.7 
+	libXext.so.6 
+	libXmu.so.6 
+	libXpm.so.4 
+	libXt.so.6 
 	libassuan.so.0 
 	libattr.so.1 
 	libbabl-0.1.so.0 
@@ -475,10 +487,10 @@ The output is:
 	libbind9.so.90 
 	libbluray.so.1 
 	libbz2.so.1 
+	libc.so.6 
 	libcap.so.2 
 	libcom_err.so.2 
 	libcrypto.so.10 
-	libc.so.6 
 	libcube4.so.7 
 	libdl.so.2 
 	libdns.so.100 
@@ -493,11 +505,10 @@ The output is:
 	libgpg-error.so.0 
 	libgssapi_krb5.so.2 
 	libgthread-2.0.so.0 
-	libICE.so.6 
 	libidn.so.11 
+	libisc.so.95 
 	libisccc.so.90 
 	libisccfg.so.90 
-	libisc.so.95 
 	libjli.so 
 	libk5crypto.so.3 
 	libkeyutils.so.1 
@@ -512,14 +523,12 @@ The output is:
 	libpcap.so.1 
 	libpcre.so.1 
 	libpng15.so.15 
-	libpthread.so.0 
 	libpth.so.20 
-	libQtCore.so.4 
+	libpthread.so.0 
 	libreadline.so.6 
 	libresolv.so.2 
 	librt.so.1 
 	libselinux.so.1 
-	libSM.so.6 
 	libsoprano.so.4 
 	libspiro.so.0 
 	libstdc++.so.6 
@@ -527,14 +536,8 @@ The output is:
 	libtokyocabinet.so.9 
 	libutil.so.1 
 	libuuid.so.1 
-	libX11.so.6 
-	libXau.so.6 
-	libXaw.so.7 
 	libxcb.so.1 
-	libXext.so.6 
 	libxml2.so.2 
-	libXmu.so.6 
-	libXpm.so.4 
-	libXt.so.6 
 	libz.so.1 
 	linux-vdso.so.1 
+
