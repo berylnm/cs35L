@@ -1,0 +1,540 @@
+=================================
+I use $ to denote command line
+================================
+1. First I create the required file.
+   $ emacs cos.c
+
+// start of cos.c
+#include <math.h>
+#include <stdio.h>
+int main()
+{
+  printf("%.17g",cos(0.5));
+}
+// end of cos.c
+
+The header file <math.h> is included for computing cos(0.5), and the
+header file <stdio.h> is included for printf function
+
+2. First, I compile it and do the test.
+   $ gcc -o cos cos.c
+
+   Then, Use the ldd comand to see which dynamic libraries the program uses
+      $ ldd cos
+The output is:
+
+    linux-vdso.so.1 =>  (0x00007ffdaf18e000)
+    libc.so.6 => /lib64/libc.so.6 (0x00007ffa7f72d000)
+    /lib64/ld-linux-x86-64.so.2 (0x00007ffa7fb16000)
+
+
+3. Use the strace command to see which systems calls the program makes
+       $ strace  ./cos
+execve("./cos", ["./cos"], [/* 34 vars */]) = 0
+brk(0)                                  = 0x8d7000
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0)
+= 0x7fd8ecbba000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+open("/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=153565, ...}) = 0
+mmap(NULL, 153565, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fd8ecb94000
+close(3)                                = 0
+open("/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0 \34\2\0\0\0\0\0"...,
+832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=2112384, ...}) = 0
+mmap(NULL, 3936832, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0)
+= 0x7fd8ec5d8000
+mprotect(0x7fd8ec78f000, 2097152, PROT_NONE) = 0
+mmap(0x7fd8ec98f000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED
+|MAP_DENYWRITE, 3, 0x1b7000) = 0x7fd8ec98f000
+mmap(0x7fd8ec995000, 16960, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED
+|MAP_ANONYMOUS, -1, 0) = 0x7fd8ec995000
+close(3)                                = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0)
+= 0x7fd8ecb93000
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0)
+= 0x7fd8ecb91000
+arch_prctl(ARCH_SET_FS, 0x7fd8ecb91740) = 0
+mprotect(0x7fd8ec98f000, 16384, PROT_READ) = 0
+mprotect(0x600000, 4096, PROT_READ)     = 0
+mprotect(0x7fd8ecbbb000, 4096, PROT_READ) = 0
+munmap(0x7fd8ecb94000, 153565)          = 0
+fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136, 25), ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0)
+= 0x7fd8ecbb9000
+write(1, "0.87758256189037276", 190.87758256189037276)     = 19
+exit_group(0)                           = ?
++++ exited with 0 +++
+
+I think the system calls of open, close, mmap, read, access and fstat
+are related to dynamic linking because they either call the shared library
+(the file with .so type) or use the output of the open() as the position
+pointer to locate the next place to act on. Basically, access() checks
+whether the given file could be accessed. If the given file is a
+symbolic link, access() dereference it. Then, it use open() to locate the
+shared library, use fstat to get the information about the library, and
+use mmap to create a new mapping in the virtual address space of the calling
+proces. It then use close() to close it. For the second library, in addition to
+the previous process, it reads from the library after open it.
+
+
+4. To get the list of commands, I run
+      $ ls /usr/bin | awk 'NR%101==004596548%101'
+
+The output is:
+
+addr2line
+bd_info
+checkXML
+cube_cut
+dig
+eu-size
+gegl
+gpg-connect-agent
+gvfs-less
+icu-config
+jmap
+kmmatch
+ldns-zsplit
+make
+munch
+onto2vocabularyclass
+pamstereogram
+pbmtoptx
+pinky
+pnmstitch
+ppmquantall
+python-config
+rpcgen
+setfattr
+ssh-agent
+tctmgr
+unpack200
+xconsole
+xzfgrep
+
+5.
+
+1) addr2line
+   $ ldd /usr/bin/addr2line
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffcea1e3000)
+	libbfd-2.23.52.0.1-55.el7.so => /lib64/libbfd-2.23.52.0.1-55.el7.so
+	(0x00007f2631ff1000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00007f2631ded000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007f2631bd6000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f2631814000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f263232f000)
+
+2) bd_info
+   $ ldd /usr/bin/bd_info
+The output is:
+    	linux-vdso.so.1 =>  (0x00007fff7f7fc000)
+	libbluray.so.1 => /usr/lib64/libbluray.so.1 (0x00007fef05a15000)
+	libpthread.so.0 => /usr/lib64/libpthread.so.0 (0x00007fef057f8000)
+	libc.so.6 => /usr/lib64/libc.so.6 (0x00007fef05436000)
+	libxml2.so.2 => /usr/lib64/libxml2.so.2 (0x00007fef050cd000)
+	libdl.so.2 => /usr/lib64/libdl.so.2 (0x00007fef04ec9000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fef05c3f000)
+	libz.so.1 => /usr/lib64/libz.so.1 (0x00007fef04cb2000)
+	liblzma.so.5 => /usr/lib64/liblzma.so.5 (0x00007fef04a8d000)
+	libm.so.6 => /usr/lib64/libm.so.6 (0x00007fef0478b000)
+	
+3) checkXML
+   $ ldd /usr/bin/checkXML
+
+The output is:
+    not a dynamic executable
+
+The error appears because checkXML does not depend on other libraries.
+It is a script rather than an executable.
+It is an XML lint tool for KDE DocBook XML documents.
+
+4) cube_cut
+   $ ldd /usr/bin/cube_cut
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffea4182000)
+	libcube4.so.7 => /lib64/libcube4.so.7 (0x00007f312b6c6000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007f312b4b0000)
+	libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00007f312b1a6000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007f312aea4000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f312ac8e000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f312a8cb000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f312bb58000)
+
+5) dig
+   $ ldd /usr/bin/dig
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffdb254a000)
+	libdns.so.100 => /lib64/libdns.so.100 (0x00007ff3c7ca1000)
+	liblwres.so.90 => /lib64/liblwres.so.90 (0x00007ff3c7a8e000)
+	libbind9.so.90 => /lib64/libbind9.so.90 (0x00007ff3c787f000)
+	libisccfg.so.90 => /lib64/libisccfg.so.90 (0x00007ff3c765c000)
+	libisccc.so.90 => /lib64/libisccc.so.90 (0x00007ff3c7453000)
+	libisc.so.95 => /lib64/libisc.so.95 (0x00007ff3c71ea000)
+	libgssapi_krb5.so.2 => /lib64/libgssapi_krb5.so.2 (0x00007ff3c6f9e000)
+	libkrb5.so.3 => /lib64/libkrb5.so.3 (0x00007ff3c6cb9000)
+	libk5crypto.so.3 => /lib64/libk5crypto.so.3 (0x00007ff3c6a86000)
+	libcom_err.so.2 => /lib64/libcom_err.so.2 (0x00007ff3c6882000)
+	libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00007ff3c649a000)
+	libcap.so.2 => /lib64/libcap.so.2 (0x00007ff3c6294000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00007ff3c6078000)
+	libxml2.so.2 => /lib64/libxml2.so.2 (0x00007ff3c5d0f000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007ff3c5af8000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007ff3c57f6000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00007ff3c55f2000)
+	libidn.so.11 => /lib64/libidn.so.11 (0x00007ff3c53be000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007ff3c4ffc000)
+	libkrb5support.so.0 => /lib64/libkrb5support.so.0 (0x00007ff3c4dec000)
+	libkeyutils.so.1 => /lib64/libkeyutils.so.1 (0x00007ff3c4be8000)
+	libresolv.so.2 => /lib64/libresolv.so.2 (0x00007ff3c49ce000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007ff3c809b000)
+	libattr.so.1 => /lib64/libattr.so.1 (0x00007ff3c47c8000)
+	liblzma.so.5 => /lib64/liblzma.so.5 (0x00007ff3c45a3000)
+	libselinux.so.1 => /lib64/libselinux.so.1 (0x00007ff3c437d000)
+	libpcre.so.1 => /lib64/libpcre.so.1 (0x00007ff3c411c000)
+6) eu-size
+   $ ldd /usr/bin/eu-size
+The output is:
+    	linux-vdso.so.1 =>  (0x00007ffd6d9ac000)
+	libelf.so.1 => /lib64/libelf.so.1 (0x00007fa9b3f5b000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007fa9b3b99000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fa9b4198000
+
+7) gegl
+   $ ldd /usr/bin/gegl
+The output is:
+    	linux-vdso.so.1 =>  (0x00007ffdffdf0000)
+	libgegl-0.2.so.0 => /usr/lib64/libgegl-0.2.so.0 (0x00007fdf21fa4000)
+	libgmodule-2.0.so.0 => /usr/lib64/libgmodule-2.0.so.0
+	(0x00007fdf21d9f000)
+	libgio-2.0.so.0 => /usr/lib64/libgio-2.0.so.0 (0x00007fdf21a29000)
+	libgobject-2.0.so.0 => /usr/lib64/libgobject-2.0.so.0
+	(0x00007fdf217d9000)
+	libgthread-2.0.so.0 => /usr/lib64/libgthread-2.0.so.0
+	(0x00007fdf215d7000)
+	libglib-2.0.so.0 => /usr/lib64/libglib-2.0.so.0 (0x00007fdf2129f000)
+	libbabl-0.1.so.0 => /usr/lib64/libbabl-0.1.so.0 (0x00007fdf21061000)
+	libm.so.6 => /usr/lib64/libm.so.6 (0x00007fdf20d5f000)
+	libpng15.so.15 => /usr/lib64/libpng15.so.15 (0x00007fdf20b33000)
+	libspiro.so.0 => /usr/lib64/libspiro.so.0 (0x00007fdf2092e000)
+	libpthread.so.0 => /usr/lib64/libpthread.so.0 (0x00007fdf20712000)
+	libc.so.6 => /usr/lib64/libc.so.6 (0x00007fdf2034f000)
+	libgcc_s.so.1 => /usr/lib64/libgcc_s.so.1 (0x00007fdf20139000)
+	libdl.so.2 => /usr/lib64/libdl.so.2 (0x00007fdf1ff35000)
+	libffi.so.6 => /usr/lib64/libffi.so.6 (0x00007fdf1fd2c000)
+	libz.so.1 => /usr/lib64/libz.so.1 (0x00007fdf1fb16000)
+	libselinux.so.1 => /usr/lib64/libselinux.so.1 (0x00007fdf1f8f1000)
+	libresolv.so.2 => /usr/lib64/libresolv.so.2 (0x00007fdf1f6d6000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fdf2241a000)
+	libpcre.so.1 => /usr/lib64/libpcre.so.1 (0x00007fdf1f475000)
+	liblzma.so.5 => /usr/lib64/liblzma.so.5 (0x00007fdf1f24f000)
+
+8) gpg-connect-agent
+   $ ldd /usr/bin/gpg-connect-agent
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffe6bd6c000)
+	libassuan.so.0 => /lib64/libassuan.so.0 (0x00007f9809d38000)
+	libgpg-error.so.0 => /lib64/libgpg-error.so.0 (0x00007f9809b33000)
+	libpth.so.20 => /lib64/libpth.so.20 (0x00007f980991c000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00007f9809718000)
+	libnsl.so.1 => /lib64/libnsl.so.1 (0x00007f98094ff000)
+	libreadline.so.6 => /lib64/libreadline.so.6 (0x00007f98092b8000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f9808ef6000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f9809f70000)
+	libtinfo.so.5 => /lib64/libtinfo.so.5 (0x00007f9808ccc000)
+	
+9) gvfs-less
+   $ ldd /usr/bin/gvfs-less
+The output is:
+	not a dynamic executable
+
+The error occurs because gvfs-less does not depend on other libraries.
+It is a script rather than an executable.
+It execute less on the output of gvfs-cat.
+
+10) icu-config
+    $ ldd /usr/bin/icu-config
+The output is:
+	not a dynamic executable
+The error occurs because icu-config does not depend on other libraries.
+It is a script rather than an executable.
+It output ICU build options.
+
+11) jmap
+    $ ldd /usr/bin/jmap
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffc339bc000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00007fe3c0799000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007fe3c0582000)
+	libjli.so => not found
+	libdl.so.2 => /lib64/libdl.so.2 (0x00007fe3c037e000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007fe3bffbb000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fe3c09dc000)
+
+12) kmmatch
+    $ ldd /usr/bin/kmmatch
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffe993a8000)
+	libQtCore.so.4 => /lib64/libQtCore.so.4 (0x00007fac40367000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00007fac4014b000)
+	libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00007fac3fe41000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007fac3fb3f000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007fac3f929000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007fac3f566000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007fac3f350000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00007fac3f14c000)
+	libgthread-2.0.so.0 => /lib64/libgthread-2.0.so.0 (0x00007fac3ef49000)
+	libglib-2.0.so.0 => /lib64/libglib-2.0.so.0 (0x00007fac3ec12000)
+	librt.so.1 => /lib64/librt.so.1 (0x00007fac3ea0a000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fac40879000)
+	
+13) ldns-zsplit
+    $ ldd /usr/bin/ldns-zsplit
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffc007da000)
+	libpcap.so.1 => /lib64/libpcap.so.1 (0x00007faf15b61000)
+	libldns.so.1 => /lib64/libldns.so.1 (0x00007faf1590a000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007faf15547000)
+	libcrypto.so.10 => /lib64/libcrypto.so.10 (0x00007faf1515f000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00007faf14f5b000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007faf15dc9000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007faf14d44000)
+
+14) make
+    $ ldd /usr/bin/make
+ The output is:
+ 	linux-vdso.so.1 =>  (0x00007ffc8e18f000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007fa20ef2b000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fa20f314000)
+	
+15) munch
+    $ ldd /usr/bin/munch
+The output is:
+	linux-vdso.so.1 =>  (0x00007fff6b7fc000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007efccc3e2000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007efccc7cb000)
+
+16) onto2vocabularyclass
+    $ ldd /usr/bin/onto2vocabularyclass
+The output is:
+	linux-vdso.so.1 =>  (0x00007fffd1aef000)
+	libQtCore.so.4 => /lib64/libQtCore.so.4 (0x00007f3fb39ef000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f3fb37d3000)
+	libsoprano.so.4 => /lib64/libsoprano.so.4 (0x00007f3fb34e5000)
+	libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00007f3fb31dc000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007f3fb2eda000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f3fb2cc3000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f3fb2901000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007f3fb26eb000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00007f3fb24e6000)
+	libgthread-2.0.so.0 => /lib64/libgthread-2.0.so.0 (0x00007f3fb22e4000)
+	libglib-2.0.so.0 => /lib64/libglib-2.0.so.0 (0x00007f3fb1fad000)
+	librt.so.1 => /lib64/librt.so.1 (0x00007f3fb1da4000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f3fb3f01000)
+
+17) pamstereogram
+    $ ldd /usr/bin/pamstereogram
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffc7cbfe000)
+	libnetpbm.so.11 => /lib64/libnetpbm.so.11 (0x00007fea6db04000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007fea6d802000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007fea6d43f000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fea6dd65000)
+	
+18) pbmtoptx
+    $ ldd /usr/bin/pbmtoptx
+The output is:
+	linux-vdso.so.1 =>  (0x00007fff8e30e000)
+	libnetpbm.so.11 => /lib64/libnetpbm.so.11 (0x00007f882d860000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007f882d55e000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f882d19b000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f882dac1000)
+
+19) pinky
+    $ ldd /usr/bin/pinky
+The output is:
+	linux-vdso.so.1 =>  (0x00007fff838ac000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f7330740000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f7330b29000)
+
+20) pnmstitch
+    $ ldd /usr/bin/pnmstitch
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffe4e9fb000)
+	libnetpbm.so.11 => /lib64/libnetpbm.so.11 (0x00007fc044329000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007fc044027000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007fc043c64000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007fc04458a000)
+
+21) ppmquantall
+    $ ldd /usr/bin/ppmquantall
+The output is:
+    	not a dynamic executable
+The error occurs because ppmquantall does not depend on other libraries.
+It is a script rather than an executable.
+It is an obselete part of Netpbm and has been replaced by pnmquantall.
+
+22) python-config
+    $ ldd /usr/bin/python-config
+The output is:
+	not a dynamic executable
+The error occurs because python-config does not depend on other libraries.
+It is a script rather than an executable.
+
+23) rpcgen
+    $ ldd /usr/bin/rpcgen
+The output is:
+	linux-vdso.so.1 =>  (0x00007fff475a3000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f77c93d2000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f77c97bb000)
+
+24) setfattr
+    $ ldd /usr/bin/setfattr
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffeb17a5000)
+	libattr.so.1 => /lib64/libattr.so.1 (0x00007f3d3767f000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f3d372bd000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f3d378ab000)
+	
+25) ssh-agent
+    $ ldd /usr/bin/ssh-agent
+The output is:
+ldd: error: you do not have read permission for `/usr/bin/ssh-agent'
+
+This error occurs because I do not have the read permission for
+ssh-agent. And I could not use chmod to permit the change.
+It's the restriction by the server.
+
+26) tctmgr
+    $ ldd /usr/bin/tctmgr
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffe41dde000)
+	libtokyocabinet.so.9 => /lib64/libtokyocabinet.so.9 (0x00007f9101a87000)
+	libbz2.so.1 => /lib64/libbz2.so.1 (0x00007f9101877000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007f9101660000)
+	librt.so.1 => /lib64/librt.so.1 (0x00007f9101458000)
+	libpthread.so.0 => /lib64/libpthread.so.0 (0x00007f910123c000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007f9100f39000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f9100b77000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f9101d31000)
+
+27) unpack200
+    $ ldd /usr/bin/unpack200
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffd3450c000)
+	libz.so.1 => /lib64/libz.so.1 (0x00007f8c2b69c000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007f8c2b2d9000)
+	libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00007f8c2afd0000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007f8c2b8d9000)
+	libm.so.6 => /lib64/libm.so.6 (0x00007f8c2acce000)
+	libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f8c2aab7000)
+	
+28) xconsole
+    $ ldd /usr/bin/xconsole
+The output is:
+	linux-vdso.so.1 =>  (0x00007ffcc1187000)
+	libXaw.so.7 => /lib64/libXaw.so.7 (0x00007efd04b04000)
+	libXmu.so.6 => /lib64/libXmu.so.6 (0x00007efd048e9000)
+	libXt.so.6 => /lib64/libXt.so.6 (0x00007efd04681000)
+	libX11.so.6 => /lib64/libX11.so.6 (0x00007efd04343000)
+	libutil.so.1 => /lib64/libutil.so.1 (0x00007efd04140000)
+	libc.so.6 => /lib64/libc.so.6 (0x00007efd03d7d000)
+	libXext.so.6 => /lib64/libXext.so.6 (0x00007efd03b6b000)
+	libXpm.so.4 => /lib64/libXpm.so.4 (0x00007efd03959000)
+	libSM.so.6 => /lib64/libSM.so.6 (0x00007efd03750000)
+	libICE.so.6 => /lib64/libICE.so.6 (0x00007efd03534000)
+	libxcb.so.1 => /lib64/libxcb.so.1 (0x00007efd03312000)
+	libdl.so.2 => /lib64/libdl.so.2 (0x00007efd0310d000)
+	/lib64/ld-linux-x86-64.so.2 (0x00007efd04d90000)
+	libuuid.so.1 => /lib64/libuuid.so.1 (0x00007efd02f08000)
+	libXau.so.6 => /lib64/libXau.so.6 (0x00007efd02d04000)
+	
+29) xzfgrep
+    $ ldd /usr/bin/xzfgrep
+The output is:
+	not a dynamic executable
+The error occurs because xzfgrep does not depend on other libraries.
+It is a script rather than an executable. Its function is to search
+compressed files for a regular expression.
+
+6.
+I redirect all the valid output above into unsorted.txt
+Then I run
+     $ sed 's/(.*)//' unsorted.txt >sorted.txt
+to get rid of the address.
+Then I sort it.
+
+The output is:
+	/lib64/ld-linux-x86-64.so.2 
+	libassuan.so.0 
+	libattr.so.1 
+	libbabl-0.1.so.0 
+	libbfd-2.23.52.0.1-55.el7.so 
+	libbind9.so.90 
+	libbluray.so.1 
+	libbz2.so.1 
+	libcap.so.2 
+	libcom_err.so.2 
+	libcrypto.so.10 
+	libc.so.6 
+	libcube4.so.7 
+	libdl.so.2 
+	libdns.so.100 
+	libelf.so.1 
+	libffi.so.6 
+	libgcc_s.so.1 
+	libgegl-0.2.so.0 
+	libgio-2.0.so.0 
+	libglib-2.0.so.0 
+	libgmodule-2.0.so.0 
+	libgobject-2.0.so.0 
+	libgpg-error.so.0 
+	libgssapi_krb5.so.2 
+	libgthread-2.0.so.0 
+	libICE.so.6 
+	libidn.so.11 
+	libisccc.so.90 
+	libisccfg.so.90 
+	libisc.so.95 
+	libjli.so 
+	libk5crypto.so.3 
+	libkeyutils.so.1 
+	libkrb5.so.3 
+	libkrb5support.so.0 
+	libldns.so.1 
+	liblwres.so.90 
+	liblzma.so.5 
+	libm.so.6 
+	libnetpbm.so.11 
+	libnsl.so.1 
+	libpcap.so.1 
+	libpcre.so.1 
+	libpng15.so.15 
+	libpthread.so.0 
+	libpth.so.20 
+	libQtCore.so.4 
+	libreadline.so.6 
+	libresolv.so.2 
+	librt.so.1 
+	libselinux.so.1 
+	libSM.so.6 
+	libsoprano.so.4 
+	libspiro.so.0 
+	libstdc++.so.6 
+	libtinfo.so.5 
+	libtokyocabinet.so.9 
+	libutil.so.1 
+	libuuid.so.1 
+	libX11.so.6 
+	libXau.so.6 
+	libXaw.so.7 
+	libxcb.so.1 
+	libXext.so.6 
+	libxml2.so.2 
+	libXmu.so.6 
+	libXpm.so.4 
+	libXt.so.6 
+	libz.so.1 
+	linux-vdso.so.1 
